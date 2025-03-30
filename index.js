@@ -33,10 +33,24 @@ newTodo.action(async (options) => {
         message: "Enter the description of the todo",
       },
       {
-        type: "text",
+        type: "select",
         name: "todoStatus",
         message: "Enter the status of the todo",
-        initial: "pending",
+        choices: [
+          {
+            title: "Pending",
+            value: "Pending",
+          },
+          {
+            title: "In Progress",
+            value: "InProgress",
+          },
+          {
+            title: "Completed",
+            value: "Completed",
+          },
+        ],
+        initial: 0,
       },
     ]);
 
