@@ -107,18 +107,18 @@ program
 .option("-d, --description <value>", "Description of the todo")
 .option("-s, --status <value>", "Status of the todo")
 
-updateTodo.action(async function (options){
-  
-  const newTittle = options.title;
+.action(async function (options){  
+  const id = options.id;
+  const newTitle = options.title;
   const newDescription = options.description;
   const newStatus = options.status;
   try {
-    const updatedTodo = await client.todo.update({
+    const updateTodo = await client.todo.update({
       where:{
-        id: options.id
+        id,
       },
       data: {
-        todoTitle: newTittle && newTittle,
+        todoTitle: newTitle && newTitle,
         todoDescription: newDescription && newDescription,
         todoStatus: newStatus && newStatus,
       },
