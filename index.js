@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { nanoid } from "nanoid";
 import Table from "cli-table3";
 import chalk from "chalk";
+import prompts from "prompts";
 
 
 
@@ -127,6 +128,52 @@ program
      
 } catch (error) {
     console.log(chalk.bgRed("There was an error updating the todo", error));
+  }
+});
+
+program
+.command("delete-todo")
+.description("Delete a specific todo")
+.requiredOption("-i, --id <value>", "ID of the todo")
+
+.action(async function (options){  
+  const id = options.id;
+  try {
+    const deleteTodo = await client.todo.delete({
+      where:{
+        id,
+      },
+      });
+      console.log(chalk.bgGreen("Todo with id " + options.id + " deleted successfully ✔✔✔✔✔"));
+     
+} catch (error) {
+    console.log(chalk.bgRed("There was an error deleting the todo", error));
+  }
+});
+
+program 
+.command("delete-all-todos")
+.description("Delete all todos")
+.action(async function (options){  
+  try {
+  console.log(chalk.bgYellow("Are you sure you want to delete all todos?"));
+  const response = await prompts({
+    type: "select"
+    ,name: "value",
+    message:"Are you sure you want to delete all todos?",
+    choices: [
+      { title: "Yes", value: "yes" },
+      { title: "No", value: "no" },
+    ],
+  });
+  if (response.value === "yes") {
+    const deleteTodos = await client.todo.deleteMany();
+    console.log(chalk.bgGreen("All todos deleted successfully ✔✔✔✔✔"));
+  }
+
+     
+} catch (error) {
+    console.log(chalk.bgRed("There was an error deleting the todos", error));
   }
 });
 
