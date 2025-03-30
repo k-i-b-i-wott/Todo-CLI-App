@@ -5,8 +5,6 @@ import Table from "cli-table3";
 import chalk from "chalk";
 import prompts from "prompts";
 
-
-
 const program = new Command();
 const client = new PrismaClient();
 
@@ -17,18 +15,37 @@ program
 
 const newTodo = program.command("add-todo");
 newTodo.description("Add a new todo");
-newTodo.requiredOption("-t, --title <value>", "Title of the todo");
-newTodo.requiredOption("-d, --description <value>", "Description of the todo");
-newTodo.requiredOption("-s, --status <value>", "Status of the todo");
+// newTodo.requiredOption("-t, --title <value>", "Title of the todo");
+// newTodo.requiredOption("-d, --description <value>", "Description of the todo");
+// newTodo.requiredOption("-s, --status <value>", "Status of the todo");
 
 newTodo.action(async (options) => {
   try {
+    const response = await prompts([
+      {
+        type: "text",
+        name: "todoTitle",
+        message: "Enter the title of the todo",
+      },
+      {
+        type: "text",
+        name: "todoDescription",
+        message: "Enter the description of the todo",
+      },
+      {
+        type: "text",
+        name: "todoStatus",
+        message: "Enter the status of the todo",
+        initial: "pending",
+      },
+    ]);
+
     const todo = await client.todo.create({
       data: {
         id: nanoid(4),
-        todoTitle: options.title,
-        todoDescription: options.description,
-        todoStatus: options.status,
+        todoTitle: response.todoTitle,
+        todoDescription: response.todoDescription,
+        todoStatus: response.todoStatus,
       },
     });
     console.log(chalk.bgGreen("Todo created successfully ✔✔✔✔✔"));
@@ -45,7 +62,7 @@ newTodo.action(async (options) => {
     ]);
     console.log(table.toString());
   } catch (error) {
-    console.log(chalk.bgRed("There was an erro creating the todo", error));
+    console.log(chalk.bgRed("There was an error creating the todo", error));
   }
 });
 
@@ -55,15 +72,15 @@ readTodos.option("-i, --id <value>", "ID of the todo");
 
 readTodos.action(async (options) => {
   try {
-   const id = options.id;
+    const id = options.id;
 
     if (id) {
       const todo = await client.todo.findFirst({
         where: {
-          id
+          id,
         },
       });
-      if(!todo){
+      if (!todo) {
         console.log(chalk.bgRed(`Todo with id ${id} not found`));
         return;
       }
@@ -93,7 +110,6 @@ readTodos.action(async (options) => {
         ]);
       });
       console.log(table.toString());
-      
     }
   } catch (error) {
     console.log(chalk.bgRed("There was an error reading the todos", error));
@@ -101,80 +117,84 @@ readTodos.action(async (options) => {
 });
 
 program
-.command("update-todo")
-.description("Update a specific todo")
-.requiredOption("-i, --id <value>", "ID of the todo")
-.option("-t, --title <value>", "Title of the todo")
-.option("-d, --description <value>", "Description of the todo")
-.option("-s, --status <value>", "Status of the todo")
+  .command("update-todo")
+  .description("Update a specific todo")
+  .requiredOption("-i, --id <value>", "ID of the todo")
+  .option("-t, --title <value>", "Title of the todo")
+  .option("-d, --description <value>", "Description of the todo")
+  .option("-s, --status <value>", "Status of the todo")
 
-.action(async function (options){  
-  const id = options.id;
-  const newTitle = options.title;
-  const newDescription = options.description;
-  const newStatus = options.status;
-  try {
-    const updateTodo = await client.todo.update({
-      where:{
-        id,
-      },
-      data: {
-        todoTitle: newTitle && newTitle,
-        todoDescription: newDescription && newDescription,
-        todoStatus: newStatus && newStatus,
-      },
+  .action(async function (options) {
+    const id = options.id;
+    const newTitle = options.title;
+    const newDescription = options.description;
+    const newStatus = options.status;
+    try {
+      const updateTodo = await client.todo.update({
+        where: {
+          id,
+        },
+        data: {
+          todoTitle: newTitle && newTitle,
+          todoDescription: newDescription && newDescription,
+          todoStatus: newStatus && newStatus,
+        },
       });
-      console.log(chalk.bgGreen("Todo with id " + options.id + " updated successfully ✔✔✔✔✔"));
-     
-} catch (error) {
-    console.log(chalk.bgRed("There was an error updating the todo", error));
-  }
-});
+      console.log(
+        chalk.bgGreen(
+          "Todo with id " + options.id + " updated successfully ✔✔✔✔✔",
+        ),
+      );
+    } catch (error) {
+      console.log(chalk.bgRed("There was an error updating the todo", error));
+    }
+  });
 
 program
-.command("delete-todo")
-.description("Delete a specific todo")
-.requiredOption("-i, --id <value>", "ID of the todo")
+  .command("delete-todo")
+  .description("Delete a specific todo")
+  .requiredOption("-i, --id <value>", "ID of the todo")
 
-.action(async function (options){  
-  const id = options.id;
-  try {
-    const deleteTodo = await client.todo.delete({
-      where:{
-        id,
-      },
+  .action(async function (options) {
+    const id = options.id;
+    try {
+      const deleteTodo = await client.todo.delete({
+        where: {
+          id,
+        },
       });
-      console.log(chalk.bgGreen("Todo with id " + options.id + " deleted successfully ✔✔✔✔✔"));
-     
-} catch (error) {
-    console.log(chalk.bgRed("There was an error deleting the todo", error));
-  }
-});
-
-program 
-.command("delete-all-todos")
-.description("Delete all todos")
-.action(async function (options){  
-  try {
-  console.log(chalk.bgYellow("Are you sure you want to delete all todos?"));
-  const response = await prompts({
-    type: "select"
-    ,name: "value",
-    message:"Are you sure you want to delete all todos?",
-    choices: [
-      { title: "Yes", value: "yes" },
-      { title: "No", value: "no" },
-    ],
+      console.log(
+        chalk.bgGreen(
+          "Todo with id " + options.id + " deleted successfully ✔✔✔✔✔",
+        ),
+      );
+    } catch (error) {
+      console.log(chalk.bgRed("There was an error deleting the todo", error));
+    }
   });
-  if (response.value === "yes") {
-    const deleteTodos = await client.todo.deleteMany();
-    console.log(chalk.bgGreen("All todos deleted successfully ✔✔✔✔✔"));
-  }
 
-     
-} catch (error) {
-    console.log(chalk.bgRed("There was an error deleting the todos", error));
-  }
-});
+program
+  .command("delete-all-todos")
+  .description("Delete all todos")
+  .action(async function (options) {
+    try {
+      console.log(chalk.bgYellow("Are you sure you want to delete all todos?"));
+      const response = await prompts({
+        type: "select",
+        name: "value",
+        message: "Are you sure you want to delete all todos?",
+        choices: [
+          { title: "Yes", value: "yes" },
+          { title: "No", value: "no" },
+        ],
+      });
+      if (response.value === "yes") {
+        const deleteTodos = await client.todo.deleteMany();
+        console.log(chalk.bgGreen("All todos deleted successfully ✔✔✔✔✔"));
+      }
+    } catch (error) {
+      console.log(chalk.bgRed("There was an error deleting the todos", error));
+    }
+  });
 
 program.parseAsync();
